@@ -72,12 +72,10 @@ uint8_t M4 = 0;
 uint8_t M5 = 0;
 uint8_t M6 = 0;
 uint8_t M7 = 0;
-uint8_t M8 = 0;
-uint8_t M9 = 0;
 /* Analog values */
 uint16_t volt[2];
-volatile uint16_t PR = 0;
-volatile uint16_t Bat_level = 0;
+volatile uint16_t PR = 0; // Photoresistance value for arm detection
+volatile uint16_t Bat_level = 0; // EMG Battery Level
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -116,7 +114,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 	uint32_t waitTime = 0;
 	uint32_t waitTime2 = 0;
-	uint16_t PR = 0;
+	uint32_t waitTime3 = 0;
 
   /* USER CODE END 1 */
 
@@ -158,11 +156,12 @@ int main(void)
 		/*uint32_t elapsedtime = HAL_GetTick() - oldtime;
 		oldtime += elapsedtime;
 		waitTime += elapsedtime;
-		waitTime2 += elapsedtime;*/
+		waitTime2 += elapsedtime;
+  		waitTime3 += elapsedtime;*/
 
 		//Dragon_crest();
 
-		/*if ((waitTime >= 5000) & (PR < 50) & (M2 > 0)) { //		fermeture M2
+		/*if ((waitTime >= 5000) & (PR < 480) & (M2 > 0)) { //		fermeture M2
 			M2 = 0;
 			pwm(&hi2c1, PCA9685_Address, 14, M2);
 			waitTime = 0;
@@ -175,14 +174,25 @@ int main(void)
 			pwm(&hi2c1, PCA9685_Address, 14, M2);
 		}
 
-		if ((waitTime2 >= 20000) & (PR > 50) & (M2 = 60)) { //
+		if ((waitTime2 >= 20000) & (PR > 480) & (M2 = 60)) { //
 			Rearming();
 			waitTime2 = 0;
 		}*/
 
 		/*if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_8) == GPIO_PIN_RESET) {
 		 NVIC_SystemReset();
-		 }*/
+		 }
+
+		if(Bat_Level < 2000){
+			uint8_t Buff[5] = { PIN_0 + 4 * 9, 0, (0 >> 8), (4000 & 0xFF), (4000 >> 8) };
+			HAL_I2C_Master_Transmit(&hi2c1, 0x80, Buff, 5, 1000);
+			if(waitTime3 >= 1000){
+				Buff[3] = 4096 & 0xFF;
+				Buff[4] = 4096 >> 8;
+				HAL_I2C_Master_Transmit(&hi2c1, 0x80, Buff, 5, 1000);
+				waitTime3 = 0;
+			}
+		}*/
 
 		//////////////// Code for debugging the PCA9685///////////////////////////
 		/* uint8_t Buf[5] = { PIN_0 + 4 * 5, 0, (0 >> 8), (4000 & 0xFF),
@@ -567,7 +577,7 @@ static void Dragon_crest(void) {
 		HAL_I2C_Master_Transmit(&hi2c1, 0x80, Buf, 5, 1000);
 	}
 	if (Ovf_Cnt > 20) {
-		if (Cnt_led >= 100) {
+		if (Cnt_led >= 80) {
 			HAL_I2C_Master_Transmit(&hi2c1, 0x80, Buf2, 5, 1000);
 			Ovf_Cnt = 0;
 			Cnt_led = 0;
@@ -582,60 +592,39 @@ static void Dragon_crest(void) {
 }
 static void Desarming(void) {
 
-	while (M1 < 60) {
+	while (M1 < 175) {
 		pwm(&hi2c1, PCA9685_Address, 2, M1);
-		M1 += 10;
-		HAL_Delay(50);
-	}
-	while ((M3 < 170) || (M4 > 0)) {
 		pwm(&hi2c1, PCA9685_Address, 2, M3);
-		pwm(&hi2c1, PCA9685_Address, 2, M4);
-		M3 += 10;
-		M4 -= 10;
+		M1 += 5;
+		M3 += 5;
 		HAL_Delay(30);
 	}
-	while (M9 < 60) {
-		pwm(&hi2c1, PCA9685_Address, 2, M9);
-		M9 += 10;
-		HAL_Delay(30);
-	}
-	while ((M5 > 0) || (M7 < 170)) {
+	while ((M5 > 0) || (M7 < 90)) {
 		pwm(&hi2c1, PCA9685_Address, 2, M5);
 		pwm(&hi2c1, PCA9685_Address, 2, M7);
-		M5 -= 10;
-		M7 += 10;
-		HAL_Delay(50);
+		M5 -= 5;
+		M7 += 5;
+		HAL_Delay(30);
 	}
-	while ((M6 > 0) || (M8 < 170)) {
+	while ((M4 > 0) || (M6 < 170)) {
+		pwm(&hi2c1, PCA9685_Address, 2, M4);
 		pwm(&hi2c1, PCA9685_Address, 2, M6);
-		pwm(&hi2c1, PCA9685_Address, 2, M8);
-		M6 -= 10;
-		M8 += 10;
-		HAL_Delay(50);
+		M4 -= 5;
+		M6 += 5;
+		HAL_Delay(30);
 	}
 	while (M2 < 60) {
 		pwm(&hi2c1, PCA9685_Address, 2, M2);
 		M2 += 10;
-		HAL_Delay(50);
+		HAL_Delay(30);
 	}
 }
 static void Arming(void) {
-
-	while (M1 > 0) {
+	while (M1 > 175){
 		pwm(&hi2c1, PCA9685_Address, 2, M1);
-		M1 -= 10;
-		HAL_Delay(50);
-	}
-	while ((M3 > 0) || (M4 < 170)) {
 		pwm(&hi2c1, PCA9685_Address, 2, M3);
-		pwm(&hi2c1, PCA9685_Address, 2, M4);
-		M3 -= 10;
-		M4 += 10;
-		HAL_Delay(30);
-	}
-	while (M9 > 0) {
-		pwm(&hi2c1, PCA9685_Address, 2, M9);
-		M9 -= 10;
+		M1 -= 5;
+		M3 += 5;
 		HAL_Delay(30);
 	}
 	while ((M5 < 170) || (M7 > 0)) {
@@ -643,28 +632,17 @@ static void Arming(void) {
 		pwm(&hi2c1, PCA9685_Address, 2, M7);
 		M5 += 10;
 		M7 -= 10;
-		HAL_Delay(50);
+		HAL_Delay(30);
 	}
 }
 static void Rearming(void) {
-
 	M2 = 0;
 	pwm(&hi2c1, PCA9685_Address, 14, M2);
 	while (M1 > 0) {
 		pwm(&hi2c1, PCA9685_Address, 2, M1);
-		M1 -= 10;
-		HAL_Delay(50);
-	}
-	while ((M3 > 0) || (M4 < 170)) {
 		pwm(&hi2c1, PCA9685_Address, 2, M3);
-		pwm(&hi2c1, PCA9685_Address, 2, M4);
-		M3 -= 10;
-		M4 += 10;
-		HAL_Delay(30);
-	}
-	while (M9 > 0) {
-		pwm(&hi2c1, PCA9685_Address, 2, M9);
-		M9 -= 10;
+		M1 -= 5;
+		M3 += 5;
 		HAL_Delay(30);
 	}
 	while ((M5 < 170) || (M7 > 0)) {
@@ -672,14 +650,14 @@ static void Rearming(void) {
 		pwm(&hi2c1, PCA9685_Address, 2, M7);
 		M5 += 10;
 		M7 -= 10;
-		HAL_Delay(50);
+		HAL_Delay(30);
 	}
-	while ((M6 < 170) || (M8 > 0)) {
+	while ((M4 < 170) || (M6 > 0)) {
+		pwm(&hi2c1, PCA9685_Address, 2, M4);
 		pwm(&hi2c1, PCA9685_Address, 2, M6);
-		pwm(&hi2c1, PCA9685_Address, 2, M8);
-		M6 += 10;
-		M8 -= 10;
-		HAL_Delay(50);
+		M4 += 10;
+		M6 -= 10;
+		HAL_Delay(30);
 	}
 }
 
