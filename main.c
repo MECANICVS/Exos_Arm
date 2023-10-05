@@ -68,9 +68,9 @@ uint8_t Cnt_mec = 0; // To trigger Arming()
 uint8_t M1 = 0;
 uint8_t M2 = 0;
 uint8_t M3 = 0;
-uint8_t M4 = 0;
-uint8_t M5 = 0;
-uint8_t M6 = 0;
+uint8_t M4 = 160;
+uint8_t M5 = 90;
+uint8_t M6 = 10;
 uint8_t M7 = 0;
 /* Analog values */
 uint16_t volt[2];
