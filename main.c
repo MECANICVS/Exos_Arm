@@ -592,21 +592,21 @@ static void Dragon_crest(void) {
 }
 static void Desarming(void) {
 
-	while (M1 < 175) {
+	while (M3 > 0) {
 		pwm(&hi2c1, PCA9685_Address, 2, M1);
 		pwm(&hi2c1, PCA9685_Address, 2, M3);
 		M1 += 5;
-		M3 += 5;
+		M3 -= 5;
 		HAL_Delay(30);
 	}
 	while ((M5 > 0) || (M7 < 90)) {
 		pwm(&hi2c1, PCA9685_Address, 2, M5);
 		pwm(&hi2c1, PCA9685_Address, 2, M7);
-		M5 -= 5;
-		M7 += 5;
+		M5 -= 10;
+		M7 += 10;
 		HAL_Delay(30);
 	}
-	while ((M4 > 0) || (M6 < 170)) {
+	while ((M4 > 0) || (M6 < 160)) {
 		pwm(&hi2c1, PCA9685_Address, 2, M4);
 		pwm(&hi2c1, PCA9685_Address, 2, M6);
 		M4 -= 5;
@@ -620,45 +620,46 @@ static void Desarming(void) {
 	}
 }
 static void Arming(void) {
-	while (M1 > 175){
+	while (M3 < 175){
 		pwm(&hi2c1, PCA9685_Address, 2, M1);
 		pwm(&hi2c1, PCA9685_Address, 2, M3);
 		M1 -= 5;
 		M3 += 5;
 		HAL_Delay(30);
 	}
-	while ((M5 < 170) || (M7 > 0)) {
+	while ((M4 < 160) || (M6 > 0)) {
 		pwm(&hi2c1, PCA9685_Address, 2, M5);
 		pwm(&hi2c1, PCA9685_Address, 2, M7);
-		M5 += 10;
-		M7 -= 10;
+		M4 += 10;
+		M6 -= 10;
 		HAL_Delay(30);
 	}
 }
 static void Rearming(void) {
 	M2 = 0;
 	pwm(&hi2c1, PCA9685_Address, 14, M2);
-	while (M1 > 0) {
+	while (M3 < 175) {
 		pwm(&hi2c1, PCA9685_Address, 2, M1);
 		pwm(&hi2c1, PCA9685_Address, 2, M3);
 		M1 -= 5;
 		M3 += 5;
 		HAL_Delay(30);
 	}
-	while ((M5 < 170) || (M7 > 0)) {
-		pwm(&hi2c1, PCA9685_Address, 2, M5);
-		pwm(&hi2c1, PCA9685_Address, 2, M7);
-		M5 += 10;
-		M7 -= 10;
-		HAL_Delay(30);
-	}
-	while ((M4 < 170) || (M6 > 0)) {
+	while ((M4 < 160) || (M6 > 0)) {
 		pwm(&hi2c1, PCA9685_Address, 2, M4);
 		pwm(&hi2c1, PCA9685_Address, 2, M6);
 		M4 += 10;
 		M6 -= 10;
 		HAL_Delay(30);
 	}
+	while ((M5 > 0) || (M7 < 90)) {
+		pwm(&hi2c1, PCA9685_Address, 2, M5);
+		pwm(&hi2c1, PCA9685_Address, 2, M7);
+		M5 += 10;
+		M7 -= 10;
+		HAL_Delay(30);
+	}
+
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc) {
