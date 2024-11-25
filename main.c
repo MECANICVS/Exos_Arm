@@ -634,6 +634,7 @@ static uint16_t RegU(uint8_t Angle) {
 static uint16_t RegUD(uint8_t Angle) {
 	return (((Angle * 0.0055) + 1) / 20) * 20000;
 }
+// I highly recommend to use external pull up resistors besides internal pull up for SDA & SCL
 static void prescaler_choice(I2C_HandleTypeDef *hi2c, uint8_t address,
 		uint16_t frequency) {
 	address = address << 1; // Going from 7 bits address to 8 bits
@@ -643,6 +644,7 @@ static void prescaler_choice(I2C_HandleTypeDef *hi2c, uint8_t address,
 	uint8_t oldmode;
 
 	stat = HAL_I2C_Master_Transmit(hi2c, address, buffer, 2, 10);
+	//stat = HAL_I2C_Master_Transmit(hi2c, address, buffer, 1, 10); // You can try this as well, sometimes it didn't work for me
 	if (stat != HAL_OK) {
 		TX_STAT = "KO_TX";
 	} else {
