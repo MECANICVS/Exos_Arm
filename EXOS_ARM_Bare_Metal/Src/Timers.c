@@ -64,5 +64,5 @@ void TIM9_IT(void) {
     TIM9->EGR |= (1U<< 0);
     TIM9->CR1 |= TIM_CR1_CEN;// Start the timer
 
-    NVIC_EnableIRQ(TIM1_BRK_TIM9_IRQn); // Unmask the interrupt - Enable DMA interrupt in NVIC
+    NVIC_EnableIRQ(TIM1_BRK_TIM9_IRQn); // Unmask the interrupt - Enable Timer 9 interrupt in NVIC
 }
